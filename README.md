@@ -24,6 +24,8 @@ makefile can be defined as:
     }
 </code></pre>
 
+![letter B](https://i.imgur.com/ajF66TN.png)
+
 Known Issues
 --------------
 In the rasterizer function, some small regions of a glyph may end up unfilled. This happens because the fill operation expects the calculated outline to be 'nice' (no isolated jumps in a segment of an outline) but an outline may not always be 'nice' especially at point sizes less than 16.
