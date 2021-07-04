@@ -1,0 +1,10 @@
+# Directories
+.vs/
+x64/
+x86/
+Debug/
+
+# Files
+*.user
+*.bmp
+*.ttf
