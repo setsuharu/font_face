@@ -24,6 +24,7 @@
     <ProjectGuid>{6ea93a6e-a038-42e7-817e-595167a7953d}</ProjectGuid>
     <RootNamespace>fontface</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>fontface</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -143,13 +144,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\bitmap.cpp" />
+    <ClCompile Include="src\bitmap_string.cpp" />
     <ClCompile Include="src\font_face.cpp" />
-    <ClCompile Include="src\main_sandbox.cpp" />
+    <ClCompile Include="src\input_parser.cpp" />
+    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\bitmap.hpp" />
+    <ClInclude Include="src\bitmap_string.hpp" />
     <ClInclude Include="src\font_face.hpp" />
+    <ClInclude Include="src\input_parser.hpp" />
     <ClInclude Include="src\texture_atlas.hpp" />
     <ClInclude Include="src\util.hpp" />
   </ItemGroup>

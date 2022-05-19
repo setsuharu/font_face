@@ -103,8 +103,7 @@ namespace tou
 		// resize the bitmap - will overwrite data already present in the container
 		void resize(uint32_t bitmap_width, uint32_t bitmap_height, const bitmap::argb32& default_color = { 0xFF, 0xFF, 0xFF, 0xFF });
 
-		/* the manipulation functions are not the best performing and can have O(n^4) run time in worst case scenarios  */
-
+		// the manipulation functions are not the best performing and can have O(n^4) run time in worst case scenarios
 		void crop(uint32_t from_left, uint32_t from_right, uint32_t from_top, uint32_t from_bottom);
 		void extrude(uint32_t from_right, uint32_t from_left, uint32_t from_top, uint32_t from_bottom, const bitmap::argb32& default_color = { 0xFF, 0xFF, 0xFF, 0xFF });
 		void translate_region(const tou::ivec2& bottom_left, const tou::ivec2& top_right, uint32_t right, uint32_t left, uint32_t up, uint32_t down); // region.top_right is non-inclusive
@@ -113,14 +112,19 @@ namespace tou
 		// fills given vector with data composing a complete bitmap file
 		void file(std::vector<char>& v) const;
 
+		void insert_other_bitmap_at_coordinate(const tou::bitmap_image& bitmap, const tou::ivec2& coordinate);
+
 		bitmap::argb32& operator[](const tou::ivec2& coordinate) { return m_pixels[m_get_nth_element_index(coordinate, m_width)]; }
+		const bitmap::argb32& operator[](const tou::ivec2& coordinate) const { return m_pixels[m_get_nth_element_index(coordinate, m_width)]; }
 		bitmap::argb32& operator[](uint32_t x) { return m_pixels[x]; }
+		const bitmap::argb32& operator[](uint32_t x) const { return m_pixels[x]; }
 		
 		std::vector<bitmap::argb32>::iterator begin() { return m_pixels.begin(); }
 		std::vector<bitmap::argb32>::iterator end() { return m_pixels.end(); }
-		std::vector<bitmap::argb32>::const_iterator cbegin() const { return m_pixels.cbegin(); }
 		std::vector<bitmap::argb32>::const_iterator cend() const { return m_pixels.cend(); }
+		std::vector<bitmap::argb32>::const_iterator cbegin() const { return m_pixels.cbegin(); }
 		
+		uint32_t pixel_count() const { return static_cast<uint32_t>(m_pixels.size()); }
 		uint32_t raw_size() const { return static_cast<uint32_t>(m_pixels.size()) * 4; }
 		uint32_t total_size() const { return 122 + (raw_size()); }
 		uint32_t width() const { return m_width; }

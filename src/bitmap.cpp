@@ -318,6 +318,38 @@ namespace tou
 			m_push_struct(x, v);
 	}
 
+	void bitmap_image::insert_other_bitmap_at_coordinate(const tou::bitmap_image& bitmap, const tou::ivec2& coordinate)
+	{
+		// take coordinate as the bottom-left of region
+		// take width and height of given bitmap
+		// iterate through pixels and copy to 'this' bitmap
+		uint32_t otherwidth = bitmap.width();
+		uint32_t otherheight = bitmap.height();
+		tou::ivec2 pen = coordinate;
+		tou::ivec2 otherpen = { 0, 0 };
+
+		if ((pen.x + otherwidth >= m_width) || (pen.y + otherheight >= m_height))
+		{
+			// for now, we return
+			// To Do: extrude 'this' to make room for new data
+			LOG("Unable to insert new bitmap data into existing bitmap");
+			return;
+		}
+		for (uint32_t i = 0; i < bitmap.pixel_count(); i++)
+		{
+			if (otherpen.x >= otherwidth)
+			{
+				otherpen.x = 0;
+				otherpen.y++;
+				pen.x = coordinate.x;
+				pen.y++;
+			}
+			m_pixels[m_get_nth_element_index(pen, m_width)] = bitmap[otherpen];
+			pen.x++;
+			otherpen.x++;
+		}
+	}
+
 	tou::ivec2 bitmap_image::m_get_nth_element_coordinate(uint32_t i, uint32_t width) const
 	{
 		int y = static_cast<int>(i / width);

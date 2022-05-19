@@ -1,15 +1,15 @@
 #pragma once
+#include <iostream>
 #include <string>
 #include <array>
 #include <vector>
 
 #ifdef _DEBUG
-	#include <iostream>
 	#include <cassert>
-	#define LOG(x) std::cout << x << '\n'
+	#define LOG(x) std::cout << x << std::endl
 	#define debug_break(message) LOG(message); assert(false)
 #else
-	#define LOG(x)
+	#define LOG(x) std::cout << x << std::endl
 	#define debug_break(message)
 #endif
 
@@ -20,6 +20,16 @@ namespace tou
 	struct ivec2
 	{
 		uint32_t x = 0, y = 0;
+
+		bool operator==(const ivec2& rhs)
+		{
+			return this->x == rhs.x && this->y == rhs.y;
+		}
+
+		bool operator!=(const ivec2& rhs)
+		{
+			return !(*this == rhs);
+		}
 	};
 
 	struct fvec2
@@ -47,8 +57,8 @@ namespace tou
 
 		bool load(const std::string& filepath);
 
-		void set_position(size_t x) { m_current_position = x; }
-		void increment_position(size_t x) { m_current_position += x; }
+		void set_position(uint64_t x) { m_current_position = x; }
+		void increment_position(uint64_t x) { m_current_position += x; }
 
 		size_t get_position() const { return m_current_position; }
 		const std::vector<char>& get_array() const { return m_bytes; }

@@ -132,16 +132,63 @@ namespace tou
 		};
 	}
 
+	struct glyph_value
+	{
+		uint32_t f26;
+		float vectorial;
+
+		operator unsigned int()
+		{
+			return static_cast<unsigned int>(f26);
+		}
+
+		bool operator==(const glyph_value& rhs)
+		{
+			return (this->f26 == rhs.f26 && this->vectorial == rhs.vectorial);
+		}
+
+		bool operator!=(const glyph_value& rhs)
+		{
+			return !(*this == rhs);
+		}
+	};
+
+	struct glyph_outline_value
+	{
+		glyph_value value;
+		int associated_segment_id = -1;
+		bool member_of_on_segment = false;
+		bool part_of_bezier = false;
+		bool part_of_horizontal = false;
+
+		// compares f26 values only
+		bool operator==(const glyph_outline_value& rhs)
+		{
+			return ((this->value.f26 == rhs.value.f26) && (this->associated_segment_id == rhs.associated_segment_id) &&
+				(this->member_of_on_segment == rhs.member_of_on_segment) && (this->part_of_bezier == rhs.part_of_bezier) &&
+				(this->part_of_horizontal == rhs.part_of_horizontal));
+		}
+
+	};
+
 	struct glyph_outline_segment
 	{
 		tou::ivec2 start{ 0, 0 };	// p1
 		tou::ivec2 end{ 0, 0 };		// p2
 		tou::ivec2 control{ 0, 0 };	// only if bezier = true
 		bool bezier = false;
-		bool denotes_on_transition = false;
-		bool horizontal = false;
-		std::map<uint32_t, std::vector<uint32_t>> values;
+		bool denotes_on_transition = false;	// true if y is increasing from start to end, false if y is decreasing
+		bool horizontal = false;	// y does not change and the segment is not a bezier
+		bool vertical = false;		// x does not change and the segment is not a bezier
+		int direction = -1;			// 0 for right to left, 1 for left to right (-1 if vertical)
+		std::map<uint32_t, std::vector<glyph_value>> values;
+		//std::map<uint32_t, float> y_values;
 	};
+
+	//struct glyph_outline
+	//{
+	//	std::map<uint32_t, std::vector<glyph_outline_value>> outline;
+	//};
 
 	struct glyph_bounding_box
 	{
@@ -214,6 +261,6 @@ namespace tou
 		uint16_t	m_num_glyphs;
 		uint16_t	m_units_per_em;
 		uint16_t	m_seg_count;
-		size_t		m_id_range_offset_from_filestart;
+		uint64_t	m_id_range_offset_from_filestart;
 	};
 }

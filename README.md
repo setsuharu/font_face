@@ -1,39 +1,16 @@
 # font_face
-To use in your project, put 'bitmap', 'util', and 'font_face' hpp and cpp files in a folder together and include 'font_face.hpp' where needed.
-The texture atlas class is not required and was only used to help with examining the results of the glyph rasterizer.
+Simple command line utility to extract glyphs from a truetype/opentype font file as bitmaps.
 
 Getting a glyph bitmap looks like this:
 <pre><code>
-    tou::font_face face("arial.ttf");
-    uint16_t ch = 0x0042; // letter 'B'
-    float pointsize = 64.0f;
-    auto glyph = face.get_glyph_bitmap(ch, pointsize, true, true);
-    makefile("glyph.bmp", glyph.image);
+   fontface -f arial.ttf -u 65 -p 64
 </code></pre>
+This will get 'A' from 'arial.ttf' at '64pt' size. (DPI value of 300 is used in calculations of glyph outline)
+Use -h for help.
 
-makefile can be defined as:
-<pre><code>
-    void makefile(const std::string& filename, const tou::bitmap_image& bmp)
-    {
-	    std::vector<char> v;
-	    bmp.file(v);
-	    std::ofstream out;
-	    out.open(filename, std::ios::binary | std::ios::out);
-	    out.write(v.data(), v.size());
-	    out.close();
-    }
-</code></pre>
-
-![letter B](https://i.imgur.com/ajF66TN.png)
-
-Known Issues
---------------
-In the rasterizer function, some small regions of a glyph may end up unfilled. This happens because the fill operation expects the calculated outline to be 'nice' (no isolated jumps in a segment of an outline) but an outline may not always be 'nice' especially at point sizes less than 16.
-
-Misc
---------------
-- Contributions are welcome
-- You may use the code however you please. If you do, a link to my github page would be appreciated but is not required.
+Here are some examples using the 'GrisaiaCustom.ttf' font file (rendered at 64pt):
+![fontface output example](https://files.catbox.moe/thgk7l.png)
+Anti-aliasing is not implemented.
 
 Special Thanks
 --------------

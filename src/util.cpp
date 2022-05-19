@@ -148,7 +148,7 @@ namespace tou
 			LOG(e.what());
 			return false;
 		}
-		m_bytes.reserve(static_cast<size_t>(std::filesystem::file_size(filepath)));
+		m_bytes.reserve(std::filesystem::file_size(filepath));
 		m_bytes = std::vector<char>(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
 		input.close();
 		return true;
