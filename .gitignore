@@ -1,8 +1,10 @@
 # Directories
 .vs/
+.vscode/
 x64/
 x86/
 Debug/
+build/
 
 # Files
 *.user

@@ -18,29 +18,40 @@ int main(int argc, char** argv)
 	constexpr int exit_failure = -1;
 
 	const std::string help_token = "-h";
-	const std::string filename_token = "-f";
+	const std::string fontface_filepath_token = "-f";
 	const std::string unicode_token = "-u";
 	const std::string pointsize_token = "-p";
+	const std::string output_filepath_token = "-o";
 
 	if (args.token_exists(help_token))
 	{
-		std::cout << "Usage example: fontface " << filename_token << " arial.ttf " << unicode_token << " 65 " << pointsize_token << " 12\n";
-		std::cout << filename_token << ": filename for truetype font file to use\n";
+		std::cout << "Usage example: fontface " << fontface_filepath_token << " arial.ttf " << unicode_token << " 65 " << pointsize_token << " 12\n";
+		std::cout << fontface_filepath_token << ": filename for truetype font file to use\n";
 		std::cout << unicode_token << ": unicode codepoint in decimal format of desired glyph\n";
-		std::cout << pointsize_token << ": desired pointsize of glyph (rendered using 300 dpi)" << std::endl;
+		std::cout << pointsize_token << ": desired pointsize of glyph (rendered using 300 dpi)\n";
+		std::cout << output_filepath_token << ": path to write output to. Omit to use the current directory. A .bmp extension on the last path component specifies the filename to use." << std::endl;
 		return exit_success;
 	}
-	if (!args.token_exists(filename_token) && !args.token_exists(unicode_token) && !args.token_exists(pointsize_token))
+	if (!args.token_exists(fontface_filepath_token) && !args.token_exists(unicode_token) && !args.token_exists(pointsize_token))
 	{
 		std::cout << "Insufficient parameters provided. Use 'fontface -h' for help." << std::endl;
 		return exit_failure;
 	}
 
-	std::string filepath = args.get_token_value(filename_token);
+	std::string fontface_filepath = args.get_token_value(fontface_filepath_token);
+	std::string output_filepath = "";
+
 	int codepoint = std::stoi(args.get_token_value(unicode_token).c_str());
 	float pointsize = std::stof(args.get_token_value(pointsize_token).c_str());
 
-	std::string type = filepath.substr(filepath.size() - 4, 4);
+
+	if (args.token_exists(output_filepath_token))
+	{
+		output_filepath = args.get_token_value(output_filepath_token);
+	}
+
+	std::string type = fontface_filepath.substr(fontface_filepath.size() - 4, 4);
+
 #ifdef _DEBUG
 	LOG("[Debug] type: " << type);
 	LOG("[Debug] codepoint: " << codepoint);
@@ -64,7 +75,7 @@ int main(int argc, char** argv)
 		return exit_failure;
 	}
 
-	tou::font_face face(filepath);
+	tou::font_face face(fontface_filepath);
 	if (!face)
 	{
 		std::cout << "The font file could not be loaded. Please verify that the given file is a valid\n";
@@ -75,6 +86,16 @@ int main(int argc, char** argv)
 	auto glyph = face.get_glyph_bitmap(static_cast<uint16_t>(codepoint), pointsize, true, true);
 	
 	std::string filename = "glyph" + std::to_string(codepoint) + "@" + std::to_string(static_cast<int>(pointsize)) + "pt.bmp";
+	if (output_filepath.length() > 0)
+	{
+		std::string type = output_filepath.substr(output_filepath.size() - 4, 4);
+		if (type != ".bmp")
+			filename = output_filepath + "/" + filename;
+		else
+			filename = output_filepath;
+	}
+
+
 	std::cout << "Writing bitmap to " << filename << "..." << std::endl;
 	std::vector<char> v;
 	glyph.image.file(v);

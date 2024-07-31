@@ -1,4 +1,5 @@
 #include "bitmap.hpp"
+#include <algorithm>
 
 #define V_PUSH_BACK(x, v) for(char& b : split_bytes(x)) v.push_back(b)
 

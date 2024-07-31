@@ -1,4 +1,5 @@
 #include "input_parser.hpp"
+#include <algorithm>
 
 input_parser::input_parser(int argc, char** argv)
 	:m_tokens(argv, argv + argc)
