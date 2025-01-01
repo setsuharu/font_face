@@ -5,6 +5,9 @@ x64/
 x86/
 Debug/
 build/
+build_debug/*
+build_release/*
+src_old/
 
 # Files
 *.user

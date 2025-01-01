@@ -1,8 +1,10 @@
 #pragma once
+
 #include <map>
 #include <unordered_map>
-#include "util.hpp"
+
 #include "bitmap.hpp"
+#include "util.hpp"
 
 // This class only exists to visualize the results of the glyph rasterizer at a greater scale
 

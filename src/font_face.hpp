@@ -5,7 +5,7 @@
 #include <map>
 #include <unordered_map>
 #include "util.hpp"
-#include "bitmap.hpp"
+#include "bitmap/bitmap.hpp"
 
 namespace tou
 {

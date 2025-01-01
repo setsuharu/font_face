@@ -1,109 +1,104 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+
+#include <argparse/argparse.hpp>
+
 #include "font_face.hpp"
-#include "bitmap.hpp"
-#include "input_parser.hpp"
+#include "bitmap/bitmap.hpp"
 
 int main(int argc, char** argv)
 {
-	// expected {argument list}
-	// fontface {arial.ttf 65 12 filename}
-	// fontface -f arial.ttf -u 65 -p 12
-	// fontface -font "arial.ttf" -unicode "65" -pointsize "12"
+    argparse::ArgumentParser program("fontface", "2024.12.0", argparse::default_arguments::help, true);
 
-	input_parser args(argc, argv);
+    const std::string arg_fontpath = "fontpath";
+    const std::string arg_unicode = "unicode";
+    const std::string arg_pointsize = "pointsize";
+    const std::string arg_output = "output";
 
-	constexpr int exit_success = 0;
-	constexpr int exit_failure = -1;
+    program.add_argument(arg_fontpath).help("Path to a truetype font file.");
+    program.add_argument(arg_unicode).help("Decimal representation of desired glyph's unicode codepoint.").default_value(65).scan<'i', int>();
+    program.add_argument("-p", "--" + arg_pointsize).help("If writing a bitmap, this is the integer value denoting the pointsize to return the glyph as.").default_value(12).scan<'i', int>();
+    program.add_argument("-o", "--" + arg_output).help("Write the glyph bitmap to a given path.");
 
-	const std::string help_token = "-h";
-	const std::string fontface_filepath_token = "-f";
-	const std::string unicode_token = "-u";
-	const std::string pointsize_token = "-p";
-	const std::string output_filepath_token = "-o";
+    try
+    {
+        program.parse_args(argc, argv);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        std::cerr << program;
+        return EXIT_FAILURE;
+    }
 
-	if (args.token_exists(help_token))
+    std::string font_path = program.get<std::string>(arg_fontpath);
+    int codepoint = program.get<int>(arg_unicode);
+    int pointsize = program.get<int>(arg_pointsize);
+    
+    std::string out_path;
+    if(program.present("-o"))
+    {
+        out_path = program.get<std::string>(arg_output);
+    }
+
+    std::string type = font_path.substr(font_path.size() - 4);
+    if (type != ".ttf" && type != ".otf")
+    {
+        std::cout << "The provided font file with type " << type << " does not seem to be a TrueType or OpenType font file\n";
+        return EXIT_FAILURE;
+    }
+    if (codepoint < 0 || codepoint > 0xFFFF)
 	{
-		std::cout << "Usage example: fontface " << fontface_filepath_token << " arial.ttf " << unicode_token << " 65 " << pointsize_token << " 12\n";
-		std::cout << fontface_filepath_token << ": filename for truetype font file to use\n";
-		std::cout << unicode_token << ": unicode codepoint in decimal format of desired glyph\n";
-		std::cout << pointsize_token << ": desired pointsize of glyph (rendered using 300 dpi)\n";
-		std::cout << output_filepath_token << ": path to write output to. Omit to use the current directory. A .bmp extension on the last path component specifies the filename to use." << std::endl;
-		return exit_success;
+		std::cout << "The unicode codepoint given is not valid or exists outside the 16-bit standard unicode range.\nPlease provide a decimal value between 0 and 65,535\n";
+		return EXIT_FAILURE;
 	}
-	if (!args.token_exists(fontface_filepath_token) && !args.token_exists(unicode_token) && !args.token_exists(pointsize_token))
+    if (pointsize < 0 || pointsize > 102.0f) // arbitrary limit of 102...
 	{
-		std::cout << "Insufficient parameters provided. Use 'fontface -h' for help." << std::endl;
-		return exit_failure;
-	}
-
-	std::string fontface_filepath = args.get_token_value(fontface_filepath_token);
-	std::string output_filepath = "";
-
-	int codepoint = std::stoi(args.get_token_value(unicode_token).c_str());
-	float pointsize = std::stof(args.get_token_value(pointsize_token).c_str());
-
-
-	if (args.token_exists(output_filepath_token))
-	{
-		output_filepath = args.get_token_value(output_filepath_token);
-	}
-
-	std::string type = fontface_filepath.substr(fontface_filepath.size() - 4, 4);
-
-#ifdef _DEBUG
-	LOG("[Debug] type: " << type);
-	LOG("[Debug] codepoint: " << codepoint);
-	LOG("[Debug] pointsize: " << pointsize);
-#endif
-
-	if (type != ".ttf" && type != ".otf")
-	{
-		std::cout << "The file provided is not of a valid filetype. Please provide a .ttf or .otf font file." << std::endl;
-		return exit_failure;
-	}
-	if (codepoint < 0 || codepoint > 0xFFFF)
-	{
-		std::cout << "The unicode codepoint given is not valid or exists outside the 16-bit standard unicode range.\nPlease provide a decimal value";
-		std::cout << " between 0 and 65,535" << std::endl;
-		return exit_failure;
-	}
-	if (pointsize < 0 || pointsize > 102.0f) // arbitrary limit of 102...
-	{
-		std::cout << "The given pointsize is outside the supported range. Please provide a pointsize value between 0 and 102.0" << std::endl;
-		return exit_failure;
+		std::cout << "The given pointsize is outside the supported range. Please provide a pointsize value between 0 and 102\n";
+		return EXIT_FAILURE;
 	}
 
-	tou::font_face face(fontface_filepath);
-	if (!face)
-	{
-		std::cout << "The font file could not be loaded. Please verify that the given file is a valid\n";
-		std::cout << " truetype (.ttf) or opentype (.otf) font file" << std::endl;
-		return exit_failure;
-	}
-	
-	auto glyph = face.get_glyph_bitmap(static_cast<uint16_t>(codepoint), pointsize, true, true);
-	
-	std::string filename = "glyph" + std::to_string(codepoint) + "@" + std::to_string(static_cast<int>(pointsize)) + "pt.bmp";
-	if (output_filepath.length() > 0)
-	{
-		std::string type = output_filepath.substr(output_filepath.size() - 4, 4);
-		if (type != ".bmp")
-			filename = output_filepath + "/" + filename;
-		else
-			filename = output_filepath;
-	}
+    tou::font_face face(font_path);
+    if (!face)
+    {
+        std::cout << "The font file could not be loaded. Please verify that the given file is a valid truetype (.ttf) or opentype (.otf) font file\n";
+		return EXIT_FAILURE;
+    }
 
 
-	std::cout << "Writing bitmap to " << filename << "..." << std::endl;
-	std::vector<char> v;
-	glyph.image.file(v);
-	std::ofstream out;
-	out.open(filename, std::ios::binary | std::ios::out);
-	out.write(v.data(), v.size());
-	out.close();
-	std::cout << "Done." << std::endl;
+    if (!out_path.empty())
+    {
+        tou::font_face::bitmap_glyph glyph = face.get_glyph_bitmap(static_cast<uint16_t>(codepoint), pointsize, true, true);
+        std::string filename = "glyph" + std::to_string(codepoint) + "@" + std::to_string(static_cast<int>(pointsize)) + "pt.bmp";
+	    if (out_path.length() > 0)
+	    {
+	    	std::string type = out_path.substr(out_path.size() - 4);
+	    	if (type != ".bmp")
+	    		filename = out_path + "/" + filename; // assuming just a directory was given
+	    	else
+	    		filename = out_path;
+	    }
+        std::vector<char> bitmap_data;
+        glyph.image.file(bitmap_data);
+        std::ofstream out;
+        out.open(filename, std::ios::binary | std::ios::out);
+        out.write(bitmap_data.data(), bitmap_data.size());
+        out.close();
+    }
+    else
+    {
+        tou::font_face::truetype_glyph glyph = face.get_glyph(codepoint);
+        std::cout << "glyph metrics:\n";
+        std::cout << "id: " << glyph.id << "\n";
+        std::cout << "x_min, ymin: " << glyph.x_min << ", " << glyph.y_min << "\n";
+        std::cout << "x_max, y_max: " << glyph.x_max << ", " << glyph.y_max << "\n";
+        std::cout << "num_contours: " << glyph.num_contours << "\n";
+        std::cout << "num_points: " << glyph.num_points << "\n";
+        std::cout << "instruction_len: " << glyph.instruction_len << "\n";
+        std::cout << "advance_width: " << glyph.advance_width << "\n";
+        std::cout << "left_side_bearing: " << glyph.left_side_bearing << "\n";
+    }
 
-	return exit_success;
+    return EXIT_SUCCESS;
 }
