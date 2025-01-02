@@ -3,9 +3,9 @@ Simple command line utility to extract glyphs from a truetype/opentype font file
 
 Getting a glyph bitmap looks like this:
 <pre><code>
-   fontface -f arial.ttf -u 65 -p 64
+   fontface path/to/font.ttf 65 -p 64 -o ./the_letter_A.bmp
 </code></pre>
-This will get 'A' from 'arial.ttf' at '64pt' size. (DPI value of 300 is used in calculations of glyph outline)
+This will get 'A' from 'font.ttf' at '64pt' size. (DPI value of 300 is used in calculations of glyph outline)
 Use -h for help.
 
 Here are some examples using the 'GrisaiaCustom.ttf' font file (rendered at 64pt):
